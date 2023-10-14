@@ -1,4 +1,5 @@
-# include "types.h"
+#include "types.h"
+#include "gdt.h"
 
 void printf(const int8_t * str) 
 {
@@ -8,28 +9,24 @@ void printf(const int8_t * str)
     {
         
         VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0xFF00) | str[i];
-
+        x ++;
     }
 }
+    typedef void (*constructor)();
+    extern constructor start_ctors;
+    extern constructor end_ctors;
 
-typedef void (*constructor)();
-extern constructor start_ctors;
-extern constructor end_ctors;
-
-extern "C" {
-    void callConstructors()
+    extern "C" void callConstructors()
     {
-        for (constructor * i = &start_ctors; i != &end_ctors; i ++)
+        for (constructor *i = &start_ctors; i != &end_ctors; ++i)
             (*i)();
     }
-}
 
-
-extern "C" { 
-    void kernelMain(void * multiboo_structure, int32_t magicnumber)
+    extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
     {
-        printf("Hello OS World\n");
+        GlobalDescriptorTable gdt;
+        printf("hello OS world!\n");
 
-        while(1);
+        while (1)
+            ;
     }
-}

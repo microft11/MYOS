@@ -5,7 +5,7 @@ OUTPUT_ARCH(i386:i386)
 
 SECTIONS
 {
-    . = 0X100000;
+    . = 0x100000;
 
     .text :
     {
@@ -34,4 +34,5 @@ SECTIONS
         *(.fini_array*)
         *(.comment)
     }
+
 }
