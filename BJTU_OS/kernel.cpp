@@ -1,6 +1,5 @@
 #include "types.h"
 #include "gdt.h"
-
 void printf(const int8_t * str) 
 {
     static int16_t * VideoMemory = (short*)0xb8000;
@@ -26,6 +25,8 @@ void printf(const int8_t * str)
     {
         GlobalDescriptorTable gdt;
         printf("hello OS world!\n");
+        printf("hello OS world!\n");
+
 
         while (1)
             ;

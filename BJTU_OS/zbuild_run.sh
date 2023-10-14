@@ -4,7 +4,7 @@ ASMPARAMS="--32"
 LDPARAMS="-melf_i386"
 GPPPARAMS="-m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore"
 
-objects="kernel.o loader.o gdt.o"
+objects="kernel.o loader.o gdt.o port.o"
 
 # 编译.cpp文件为.o文件
 compile_cpp() {
