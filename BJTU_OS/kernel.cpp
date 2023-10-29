@@ -1,6 +1,8 @@
 #include "types.h"
 #include "gdt.h"
 #include "interrupts.h"
+#include "keyboard.h"
+
 void printf(const int8_t *str)
 {
     static int16_t *VideoMemory = (int16_t *)0xb8000;
@@ -33,25 +35,52 @@ void printf(const int8_t *str)
         }
     }
 }
-    typedef void (*constructor)();
-    extern constructor start_ctors;
-    extern constructor end_ctors;
 
-    extern "C" void callConstructors()
+void printfHex(const uint8_t num)
+{
+    uint8_t c = num;
+    static char msg[3] = {'0'};
+    const char * hex = "0123456789ABCGEF";
+    msg[0] = hex[(c >> 4) & 0xF];
+    msg[1] = hex[c & 0xF];
+    msg[2] = '\0';
+    printf(msg);
+}
+
+class PrintfKeyboardEventHandler : public KeyboardEventHandler
+{
+public:
+    void OnKeyDown(char c)
     {
+        char msg[2] = {'\0'};
+        msg[0] = c;
+        printf(msg);
+    }
+};
+
+
+typedef void (*constructor)();
+extern constructor start_ctors;
+extern constructor end_ctors;
+
+extern "C" void callConstructors()
+{
         for (constructor *i = &start_ctors; i != &end_ctors; ++i)
-            (*i)();
-    }
+    (*i)();
+}
 
-    extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
-    {
-        GlobalDescriptorTable gdt;
-        printf("hello OS world!\n");
-        printf("hello OS world!\n");
+extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
+{
+    printf("hello OS world!\n");
+    printf("hello OS world!\n");
 
-        InterruptManager interrupts(&gdt);
-        interrupts.Activate();
+    GlobalDescriptorTable gdt;
+    InterruptManager interrupts(&gdt);
+    PrintfKeyboardEventHandler kbhandler;
+    KeyboardDriver keyboard(&interrupts, &kbhandler);
 
-        while (1)
-            ;
-    }
+    interrupts.Activate();
+
+    while (1)
+        ;
+}

@@ -1,5 +1,6 @@
 #include "interrupts.h"
 void printf(const int8_t*);
+void printfHex(const uint8_t );
 
 InterruptHandler::InterruptHandler(uint8_t interruptNumber, InterruptManager * interruptManager)
     : interruptNumber(interruptNumber), interruptManager(interruptManager)
@@ -39,7 +40,7 @@ InterruptManager::InterruptManager(GlobalDescriptorTable *gdt)
     // 每个中断门描述符的中断处理函数都被设置为 IgnoreInterruptRequest，这个函数用于忽略中断请求，相当于占位符。
 
     SetInterruptDescriptorTableEntry(0x20, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
-    SetInterruptDescriptorTableEntry(0x21, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x21, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
 
     // 初始化可编程控制器
     picMasterCommand.Write(0x11);
@@ -129,11 +130,7 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t InterruptNumber, uint32_t e
     else if (InterruptNumber != 0x20)
     {
         char msg[] = " unhandled interrupt 0x00";
-        const char * hex = "0123456789ABCGEF";
-        msg[23] = hex[(InterruptNumber >> 4) & 0xF];
-        msg[23] = hex[InterruptNumber & 0xF];
-
-        printf(msg);
+        printfHex(InterruptNumber);
     }
 
     if (0x20 <= InterruptNumber && InterruptNumber < 0x30)
