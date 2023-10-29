@@ -49,7 +49,7 @@ void printf(const int8_t *str)
         printf("hello OS world!\n");
         printf("hello OS world!\n");
 
-        InterruptManger interrupts(&gdt);
+        InterruptManager interrupts(&gdt);
         interrupts.Activate();
 
         while (1)

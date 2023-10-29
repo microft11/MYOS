@@ -1,8 +1,28 @@
 #include "interrupts.h"
 void printf(const int8_t*);
-InterruptManger::GateDescriptor InterruptManger::interruptDescriptorTable[256];
 
-InterruptManger::InterruptManger(GlobalDescriptorTable *gdt)
+InterruptHandler::InterruptHandler(uint8_t interruptNumber, InterruptManager * interruptManager)
+    : interruptNumber(interruptNumber), interruptManager(interruptManager)
+{
+    interruptManager ->handlers[interruptNumber] = this;
+}
+
+InterruptHandler::~InterruptHandler()
+{
+    if (interruptManager ->handlers[interruptNumber] == this)
+        interruptManager ->handlers[interruptNumber] = 0;
+}
+
+uint32_t InterruptHandler::HandleInterrupt(uint32_t esp)
+{
+    return esp;
+}
+
+InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
+
+InterruptManager * InterruptManager::ActivateInterruptManager = 0;
+
+InterruptManager::InterruptManager(GlobalDescriptorTable *gdt)
     : picMasterCommand(0x20), picMasterData(0x21), picSlaveCommand(0xA0), picSlaveData(0xA1)
 {
     uint16_t CodeSegment = gdt->CodeSegmentSelector();
@@ -11,6 +31,7 @@ InterruptManger::InterruptManger(GlobalDescriptorTable *gdt)
 
     for (uint16_t i = 0; i < 256; i++)
     {
+        handlers[i] = 0;
         SetInterruptDescriptorTableEntry(i, CodeSegment, &IgnoreInterruptRequest, 0, IDT_INTERRUPT_GATE);
     }
     // 通过 for 循环，遍历256个中断号（0-255），对每个中断号都调用 SetInterruptDescriptorTableEntry 函数来设置
@@ -18,6 +39,7 @@ InterruptManger::InterruptManger(GlobalDescriptorTable *gdt)
     // 每个中断门描述符的中断处理函数都被设置为 IgnoreInterruptRequest，这个函数用于忽略中断请求，相当于占位符。
 
     SetInterruptDescriptorTableEntry(0x20, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x21, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
 
     // 初始化可编程控制器
     picMasterCommand.Write(0x11);
@@ -51,21 +73,29 @@ InterruptManger::InterruptManger(GlobalDescriptorTable *gdt)
         "m" 表示将 idt 结构体作为内存操作数传递给 lidt 指令*/
 }
 
-InterruptManger::~InterruptManger()
+InterruptManager::~InterruptManager()
 {
 }
 
 
-void InterruptManger::Activate(){
+void InterruptManager::Activate(){
+    if (ActivateInterruptManager != nullptr)
+        ActivateInterruptManager -> Deactive();
+    ActivateInterruptManager = this;
+
     __asm__ volatile("sti");
 }
 
-void InterruptManger::Deactive(){
-    __asm__ volatile("cli");
+void InterruptManager::Deactive(){
+    if (ActivateInterruptManager != this)
+    {
+        ActivateInterruptManager = 0;
+        __asm__ volatile("cli");
+    }
 }
 
 
-void InterruptManger::SetInterruptDescriptorTableEntry(
+void InterruptManager::SetInterruptDescriptorTableEntry(
     uint8_t interruptNumber,            // 中断号
     uint16_t codeSegmentSelectorOffset, // 段选择符偏移
     void (*handler)(),                  // interrupt处理函数
@@ -80,12 +110,38 @@ void InterruptManger::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].reserved=0;
 }
 
-uint32_t InterruptManger::handleInterrupt(uint8_t InterruptNumber,uint32_t esp){
-    printf(" interrupt");
+uint32_t InterruptManager::handleInterrupt(uint8_t InterruptNumber,uint32_t esp){
+    // printf(" interrupt");
 
-    Port8BitSlow command(0x20);
-    command.Write(0x20);
+    if (ActivateInterruptManager != 0)
+        return ActivateInterruptManager ->DoHandleInterrupt(InterruptNumber, esp);
 
+    // Port8BitSlow command(0x20);
+    // command.Write(0x20);
+
+    return esp;
+}
+
+uint32_t InterruptManager::DoHandleInterrupt(uint8_t InterruptNumber, uint32_t esp)
+{
+    if (handlers[InterruptNumber] != nullptr)
+        esp = handlers[InterruptNumber]->HandleInterrupt(esp);
+    else if (InterruptNumber != 0x20)
+    {
+        char msg[] = " unhandled interrupt 0x00";
+        const char * hex = "0123456789ABCGEF";
+        msg[23] = hex[(InterruptNumber >> 4) & 0xF];
+        msg[23] = hex[InterruptNumber & 0xF];
+
+        printf(msg);
+    }
+
+    if (0x20 <= InterruptNumber && InterruptNumber < 0x30)
+    {
+        picMasterCommand.Write(0x20);
+        if (0x28 <= InterruptNumber)
+            picSlaveCommand.Write(0x20);
+    }
     return esp;
 }
 

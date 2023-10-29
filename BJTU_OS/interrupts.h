@@ -5,9 +5,25 @@
 #include "port.h"
 #include "gdt.h"
 
-class InterruptManger
+class InterruptHandler
 {
 protected:
+    uint8_t interruptNumber;
+    InterruptManager * interruptManager;
+public:
+    InterruptHandler(uint8_t interruptNumber, InterruptManager * interruptManager);
+    ~InterruptHandler();
+
+    virtual uint32_t HandleInterrupt(uint32_t esp);
+
+};
+
+class InterruptManager
+{
+    friend class InterruptHandler;
+protected:
+    InterruptHandler * handlers[256];
+    static InterruptManager * ActivateInterruptManager;
     struct GateDescriptor
     {
         /* data */
@@ -25,10 +41,10 @@ protected:
         /* data */
         uint16_t size;
         uint32_t base;
-    }__attribute__((packed));
+    } __attribute__((packed));
 
     static void SetInterruptDescriptorTableEntry(
-        uint8_t InterruptManger,//中断号
+        uint8_t InterruptManager,//中断号
         uint16_t codeSegmentSelectorOffset,//段选择符偏移
         void (*handler)(),//interrupt处理函数
         uint8_t DescriptorPrivilegeLevel,
@@ -41,16 +57,18 @@ protected:
     Port8BitSlow picSlaveData;
 
 public:
-    InterruptManger(GlobalDescriptorTable * gdt);
-    ~InterruptManger();
+    InterruptManager(GlobalDescriptorTable * gdt);
+    ~InterruptManager();
 
     void Activate();
     void Deactive();
 
     static uint32_t handleInterrupt(uint8_t Interrupt,uint32_t esp);
+    uint32_t DoHandleInterrupt(uint8_t InterruptNumber, uint32_t esp);
   
     static void IgnoreInterruptRequest();
     static void HandleInterruptRequest0x00();
+    static void HandleInterruptRequest0x01();
 };
 
 #endif
