@@ -2,6 +2,7 @@
 void printf(const int8_t*);
 void printfHex(const uint8_t );
 
+// 中断处理器
 InterruptHandler::InterruptHandler(uint8_t interruptNumber, InterruptManager * interruptManager)
     : interruptNumber(interruptNumber), interruptManager(interruptManager)
 {
@@ -14,13 +15,17 @@ InterruptHandler::~InterruptHandler()
         interruptManager ->handlers[interruptNumber] = 0;
 }
 
+/*这个函数用于处理中断。默认情况下，它只返回传入的栈指针 esp，没有特定的中断处理操作。
+需要注意，这个函数是虚函数，可以在派生类中进行覆盖以执行特定的中断处理操作。*/
 uint32_t InterruptHandler::HandleInterrupt(uint32_t esp)
 {
     return esp;
 }
 
+// 存储中断描述符表（IDT）。IDT 包含256个中断描述符，每个描述符用于描述一个中断处理例程
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
 
+// 用于跟踪当前激活的中断管理器
 InterruptManager * InterruptManager::ActivateInterruptManager = 0;
 
 InterruptManager::InterruptManager(GlobalDescriptorTable *gdt)
@@ -96,6 +101,9 @@ void InterruptManager::Deactive(){
 }
 
 
+/*这个函数用于设置 IDT 表中的中断描述符。
+它接受中断号、段选择符、中断处理函数、描述符特权级别和描述符类型等参数
+然后填充 IDT 表的相应条目*/
 void InterruptManager::SetInterruptDescriptorTableEntry(
     uint8_t interruptNumber,            // 中断号
     uint16_t codeSegmentSelectorOffset, // 段选择符偏移
@@ -111,6 +119,10 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
     interruptDescriptorTable[interruptNumber].reserved=0;
 }
 
+
+/*这个函数是一个处理中断的入口函数。
+它会根据当前激活的中断管理器（ActivateInterruptManager）来调用相应的中断处理函数。
+如果没有激活的中断管理器，它仅返回传入的栈指针 esp*/
 uint32_t InterruptManager::handleInterrupt(uint8_t InterruptNumber,uint32_t esp){
     // printf(" interrupt");
 
@@ -123,6 +135,11 @@ uint32_t InterruptManager::handleInterrupt(uint8_t InterruptNumber,uint32_t esp)
     return esp;
 }
 
+
+/*这个函数用于实际处理中断。
+它会首先检查是否有注册的中断处理器，如果有，就调用该处理器的 HandleInterrupt 函数。
+如果没有注册的处理器，并且中断号不是0x20（时钟中断），则输出一条错误信息。
+最后，它会更新 PIC 控制器，通知 PIC 中断已经被处理。*/
 uint32_t InterruptManager::DoHandleInterrupt(uint8_t InterruptNumber, uint32_t esp)
 {
     if (handlers[InterruptNumber] != nullptr)
