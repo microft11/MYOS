@@ -4,6 +4,7 @@
 #include "types.h"
 #include "port.h"
 #include "interrupts.h"
+#include "driver.h"
 
 class KeyboardEventHandler
 {
@@ -14,7 +15,7 @@ public:
     virtual void OnKeyUp(char) {}
 };
 
-class KeyboardDriver : public InterruptHandler
+class KeyboardDriver : public InterruptHandler, public Driver
 {
 public:
     KeyboardDriver(InterruptManager * manager, KeyboardEventHandler * handler);

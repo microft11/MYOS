@@ -2,6 +2,8 @@
 #include "gdt.h"
 #include "interrupts.h"
 #include "keyboard.h"
+#include "driver.h"
+#include "mouse.h"
 
 void printf(const int8_t *str)
 {
@@ -58,6 +60,50 @@ public:
     }
 };
 
+class MouseToConsole : public MouseEventHandler
+{
+    int16_t x, y;
+    static uint16_t *VideoMemory;
+public:
+    MouseToConsole() : x(40), y(12)
+    {
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
+                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
+                                  ((VideoMemory[80 * y + x] & 0x00FF));
+    }
+
+    void OnMouseMove(int16_t xoffset, int16_t yoffset)
+    {
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
+                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
+                                  ((VideoMemory[80 * y + x] & 0x00FF));
+        x += xoffset;
+        if (x < 0) x = 0;
+        if (y >= 80) x = 79;
+        y += yoffset;
+        if (y < 0) y = 0;
+        if (y >= 25) y = 24;
+
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
+                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
+                                  ((VideoMemory[80 * y + x] & 0x00FF));
+    }
+
+    void OnMouseDown(uint8_t button)
+    {
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
+                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
+                                  ((VideoMemory[80 * y + x] & 0x00FF));
+    }
+    void OnMouseUp(uint8_t button)
+    {
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
+                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
+                                  ((VideoMemory[80 * y + x] & 0x00FF));
+    }
+};
+
+uint16_t * MouseToConsole::VideoMemory = (uint16_t *)0xB8000;
 
 typedef void (*constructor)();
 extern constructor start_ctors;
@@ -76,8 +122,18 @@ extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
 
     GlobalDescriptorTable gdt;
     InterruptManager interrupts(&gdt);
+
+    DriverManager driverManager;
+
     PrintfKeyboardEventHandler kbhandler;
     KeyboardDriver keyboard(&interrupts, &kbhandler);
+
+    MouseToConsole mousehandler;
+    MouseDriver mouse(&interrupts, &mousehandler);
+
+    driverManager.AddDriver(&keyboard);
+    driverManager.AddDriver(&mouse);
+    driverManager.Activate();
 
     interrupts.Activate();
 
