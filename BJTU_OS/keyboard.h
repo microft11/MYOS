@@ -14,6 +14,8 @@ public:
     virtual void OnKeyDown(char) {}
     virtual void OnKeyUp(char) {}
 };
+/*KeyboardEventHandler是一个事件处理器的基类，它有一个默认构造函数和两个虚函数：OnKeyDown()和OnKeyUp()。
+这些函数可以在派生类中进行重写。在基类中，这些函数都是空的，需要在派生类中实现*/
 
 class KeyboardDriver : public InterruptHandler, public Driver
 {

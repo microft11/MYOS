@@ -5,7 +5,7 @@ void printfHex(const uint8_t );
 // 中断处理器
 InterruptHandler::InterruptHandler(uint8_t interruptNumber, InterruptManager * interruptManager)
     : interruptNumber(interruptNumber), interruptManager(interruptManager)
-{
+{ //这里指回了interruptmanager，指回的这个是惟一的，用来告诉派生了什么新的方法
     interruptManager ->handlers[interruptNumber] = this;
 }
 
