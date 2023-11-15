@@ -8,6 +8,7 @@
 .global _ZN15InterruptManager26HandleInterruptRequest\num\()Ev
 _ZN15InterruptManger26HandleInterruptRequest\num\()Ev:
     movb $\num + IRQ_BASE, (interruptnumber)
+    pushl $0
     jmp int_bottom
 .endm
 
@@ -18,11 +19,20 @@ HandleInterruptRequest 0x0C
 
 
 int_bottom:
-    pusha
-    push %ds
-    push %es
-    push %fs
-    push %gs
+    | pusha
+    | push %ds
+    | push %es
+    | push %fs
+    | push %gs
+
+    pushl %ebp
+    pushl %edi
+    pushl %esi
+
+    pushl %edx
+    pushl %ecx
+    pushl %ebx
+    pushl %eax
 
     pushl %esp
     push (interruptnumber)
@@ -33,11 +43,20 @@ int_bottom:
     #popl %esp
     movl %eax,%esp
 
-    popl %gs
-    popl %fs
-    popl %es
-    popl %ds
-    popa
+    popl %eax
+    popl %ebx
+    popl %ecx
+    popl %edx
+
+    popl %esi
+    popl %edi
+    popl %ebp
+
+    | popl %gs
+    | popl %fs
+    | popl %es
+    | popl %ds
+    | popa
 
 _ZN15InterruptManager22IgnoreInterruptRequestEv:
     iret

@@ -49,6 +49,20 @@ void printfHex(const uint8_t num)
     printf(msg);
 }
 
+void TaskA()
+{
+    while(true) {
+        printf("A");
+    }
+}
+
+void TaskB()
+{
+    while(true) {
+        printf("B");
+    }
+}
+
 class PrintfKeyboardEventHandler : public KeyboardEventHandler
 {
 public:
@@ -135,7 +149,12 @@ extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
     printf("hello OS world!\n");
 
     GlobalDescriptorTable gdt;
-    InterruptManager interrupts(&gdt);
+    TaskManager taskManager;
+    Task task1(&gdt, TaskA);
+    Task task2(&gdt, TaskB);
+    taskManager.AddTask(&task1);
+    taskManager.AddTask(&task2);
+    InterruptManager interrupts(&gdt, &taskManager);
 
     DriverManager driverManager;
 

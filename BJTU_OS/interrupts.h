@@ -4,6 +4,7 @@
 #include "types.h"
 #include "port.h"
 #include "gdt.h"
+#include "multitasking.h"
 
 class InterruptHandler
 {
@@ -26,6 +27,8 @@ class InterruptManager
 protected:
     InterruptHandler * handlers[256];
     static InterruptManager * ActivateInterruptManager;
+    TaskManager * taskManager;
+
     struct GateDescriptor
     {
         /* data */
@@ -59,7 +62,7 @@ protected:
     Port8BitSlow picSlaveData;
 
 public:
-    InterruptManager(GlobalDescriptorTable * gdt);
+    InterruptManager(GlobalDescriptorTable * gdt, TaskManager * taskManager);
     ~InterruptManager();
 
     void Activate();

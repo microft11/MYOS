@@ -28,8 +28,8 @@ InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256]
 // 用于跟踪当前激活的中断管理器
 InterruptManager * InterruptManager::ActivateInterruptManager = 0;
 
-InterruptManager::InterruptManager(GlobalDescriptorTable *gdt)
-    : picMasterCommand(0x20), picMasterData(0x21), picSlaveCommand(0xA0), picSlaveData(0xA1)
+InterruptManager::InterruptManager(GlobalDescriptorTable *gdt, TaskManager * taskManager)
+    : picMasterCommand(0x20), picMasterData(0x21), picSlaveCommand(0xA0), picSlaveData(0xA1), taskManager(taskManager)
 {
     uint16_t CodeSegment = gdt->CodeSegmentSelector();
     const uint8_t IDT_INTERRUPT_GATE = 0xE;
@@ -150,6 +150,9 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t InterruptNumber, uint32_t e
         char msg[] = " unhandled interrupt 0x00";
         printfHex(InterruptNumber);
     }
+
+    if (InterruptNumber == 0x20)
+        esp = (uint32_t)taskManager ->Schedule((CPUState*)esp);
 
     if (0x20 <= InterruptNumber && InterruptNumber < 0x30)
     {
