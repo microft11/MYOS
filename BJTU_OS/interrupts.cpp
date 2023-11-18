@@ -152,7 +152,7 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t InterruptNumber, uint32_t e
     }
 
     if (InterruptNumber == 0x20)
-        esp = (uint32_t)taskManager ->Schedule((CPUState*)esp);
+        esp = (uint32_t)taskManager ->Schedule((CPUState*)esp); //在时间中断处添加事件切换
 
     if (0x20 <= InterruptNumber && InterruptNumber < 0x30)
     {
