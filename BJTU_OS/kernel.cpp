@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "driver.h"
 #include "mouse.h"
+#include "syscalls.h"
 
 void printf(const int8_t *str)
 {
@@ -49,17 +50,22 @@ void printfHex(const uint8_t num)
     printf(msg);
 }
 
+void sysprintf(const int8_t * str)
+{
+    __asm__ ("int $0x80": : "a" (4), "b" (str)); //通过软中断，中断进入内核的中断向量表去，然后调用内核里写的print
+}
+
 void TaskA()
 {
     while(true) {
-        printf("A");
+        sysprintf("A");
     }
 }
 
 void TaskB()
 {
     while(true) {
-        printf("B");
+        sysprintf("B");
     }
 }
 
@@ -155,6 +161,8 @@ extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
     taskManager.AddTask(&task1);
     taskManager.AddTask(&task2);
     InterruptManager interrupts(&gdt, &taskManager);
+
+    SyscallHandler syscalls(&interrupts);
 
     DriverManager driverManager;
 

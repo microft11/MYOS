@@ -47,6 +47,7 @@ InterruptManager::InterruptManager(GlobalDescriptorTable *gdt, TaskManager * tas
     SetInterruptDescriptorTableEntry(0x20, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(0x21, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE);
     SetInterruptDescriptorTableEntry(0x2C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE);
+    SetInterruptDescriptorTableEntry(0x80, CodeSegment, &HandleInterruptRequest0x60, 0, IDT_INTERRUPT_GATE);
 
     // 初始化可编程控制器
     picMasterCommand.Write(0x11);

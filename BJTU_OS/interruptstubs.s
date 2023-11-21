@@ -15,15 +15,16 @@ _ZN15InterruptManger26HandleInterruptRequest\num\()Ev:
 HandleInterruptRequest 0x00
 HandleInterruptRequest 0x01
 HandleInterruptRequest 0x0C
+HandleInterruptRequest 0x60
 
 
 
 int_bottom:
-    | pusha
-    | push %ds
-    | push %es
-    | push %fs
-    | push %gs
+    # pusha
+    # push %ds
+    # push %es
+    # push %fs
+    # push %gs
 
     pushl %ebp
     pushl %edi
@@ -52,11 +53,11 @@ int_bottom:
     popl %edi
     popl %ebp
 
-    | popl %gs
-    | popl %fs
-    | popl %es
-    | popl %ds
-    | popa
+    # popl %gs
+    # popl %fs
+    # popl %es
+    # popl %ds
+    # popa
 
 _ZN15InterruptManager22IgnoreInterruptRequestEv:
     iret
