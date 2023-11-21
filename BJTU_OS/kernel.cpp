@@ -50,9 +50,39 @@ void printfHex(const uint8_t num)
     printf(msg);
 }
 
+void systime()
+{
+    __asm__ ("int $0x80": : "a" (1));
+}
+
 void sysprintf(const int8_t * str)
 {
     __asm__ ("int $0x80": : "a" (4), "b" (str)); //通过软中断，中断进入内核的中断向量表去，然后调用内核里写的print
+}
+
+int8_t strcmp(const int8_t * src, const int8_t * dest)
+{
+    while ((*src != '\0') && (*src == *dest))
+    {
+        src ++;
+        dest ++;
+    }
+    return *src - *dest;
+}
+void simpleShell(const int8_t c, KeyboardDriver * pKeyDriver)
+{
+    if (c == '\n')
+    {
+        int8_t cmd[256] = {0};
+        int8_t * cmd = pKeyDriver -> get_buffer(cmd);
+
+        if (strcmp(cmd, "time") == 0)
+            systime();
+        else if (cmd[0] != '\0')
+            sysprintf("ls unknown command\n");
+
+        sysprintf("Ls:>");
+    }
 }
 
 void TaskA()
@@ -69,11 +99,34 @@ void TaskB()
     }
 }
 
+void time()
+{
+    Port8Bit out(0x70), in(0x71);
+    uint8_t idx = 4;
+    out.Write(idx);
+    idx = in.Read();
+    printfHex(idx);
+    printf(":");
+
+    idx = 2;
+    out.Write(idx);
+    idx = in.Read();
+    printfHex(idx);
+    printf(":");
+
+    idx = 0;
+    out.Write(idx);
+    idx = in.Read();
+    printfHex(idx);
+    printf("\n");
+}
+
 class PrintfKeyboardEventHandler : public KeyboardEventHandler
 {
 public:
-    void OnKeyDown(char c)
+    void OnKeyDown(int8_t c)
     {
+        pDriver ->put_buffer(c);
         char msg[2] = {'\0'};
         msg[0] = c;
         printf(msg);

@@ -2,8 +2,17 @@
 
 void printf(const char *);
 void printfHex(const uint8_t );  // 用于以十六进制格式输出一个字节的数据
+void simpleShell(const int8_t c, KeyboardDriver * pKeyDriver);
 
 KeyboardEventHandler::KeyboardEventHandler() {}
+
+void KeyboardEventHandler::SetDriver(KeyboardDriver * pDriver)
+{
+    this->pDriver = pDriver;
+}
+
+
+KeyboardDriver::KB_BUFFER KeyboardDriver::kb_buffer = {0};
 
 /*一个是 InterruptManager 类的指针 manager，另一个是 KeyboardEventHandler 类的指针 handler。
 在构造函数的实现中，它初始化了各种成员变量，包括中断处理器、数据端口、命令端口和事件处理器
@@ -11,10 +20,46 @@ KeyboardEventHandler::KeyboardEventHandler() {}
 KeyboardDriver::KeyboardDriver(InterruptManager * manager, KeyboardEventHandler * handler)
     : InterruptHandler(0x21, manager), dataPort(0x60), commandPort(0x64), handler(handler)
 {
+    this ->handler ->SetDriver(this);
+}
+
+KeyboardDriver::~KeyboardDriver()
+{
 
 }
 
-KeyboardDriver::~KeyboardDriver(){}
+void KeyboardDriver::put_buffer(const int8_t c)
+{
+    if (kb_buffer.count < 255)
+    {
+        kb_buffer.count ++;
+        kb_buffer.buf[kb_buffer.tail ++] = c;
+        if (kb_buffer.tail == 255)
+            kb_buffer.tail = 0;
+    }
+}
+int8_t * KeyboardDriver::get_buffer(int8_t * buffer)
+{
+    int16_t i = 0;
+    int8_t c = kb_buffer.buf[kb_buffer.head];
+    buffer[i] = c;
+    while (kb_buffer.count > 0 && c != '\n')
+    {
+        kb_buffer.head ++;
+        kb_buffer.count --;
+        c = kb_buffer.buf[kb_buffer.head];
+        buffer[++i] = c;
+        if (kb_buffer.head == 255)
+            kb_buffer.head = 0;
+    }
+    kb_buffer.head ++;
+    kb_buffer.count --;
+    if (kb_buffer.head == 255)
+        kb_buffer.head = 0;
+
+    buffer[i] = '\0';
+    return buffer;
+}
 
 /*这个函数是用于处理键盘中断的方法。当键盘中断发生时，操作系统将调用此函数。
 函数返回一个 uint32_t 类型的值，并且接受一个 esp 参数（栈指针）。
@@ -60,7 +105,7 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
     case 0x2D: if (shift) handler ->OnKeyDown('X'); else handler ->OnKeyDown('x'); break;
     case 0x15: if (shift) handler ->OnKeyDown('Y'); else handler ->OnKeyDown('y'); break;
     case 0x2C: if (shift) handler ->OnKeyDown('Z'); else handler ->OnKeyDown('z'); break;
-    
+    case 0x1A: handler ->OnKeyDown('\n'); simpleShell('\n', this); break;
 
     case 0x2A: case 0x36: shift = true; break;
     case 0xAA: case 0xB6: shift = false; break;
