@@ -3,5 +3,3 @@
 移除它对于 Rust std标准库的依赖，因为 Rust std标准库自己就需要操作系统内核的支持
 
 我们将其称为“三叶虫”操作系统
-
-![三叶虫OS结构](https://example.com/image.jpg](https://rcore-os.cn/rCore-Tutorial-Book-v3/_images/lib-os-detail.png)https://rcore-os.cn/rCore-Tutorial-Book-v3/_images/lib-os-detail.png)
