@@ -1,0 +1,7 @@
+.idea/*
+.vscode/*
+usr/target/*
+usr/.idea/*
+usr/src/link_app.S
+usr/Cargo.lock
+tools/
