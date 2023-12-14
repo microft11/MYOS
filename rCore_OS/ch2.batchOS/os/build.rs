@@ -1,6 +1,6 @@
 use std::fs::{read_dir, File};
 use std::io::{Result, Write};
-
+// to build link_app.S里面的代码
 fn main() {
     println!("cargo:rerun-if-changed=../user/src/");
     println!("cargo:rerun-if-changed={}", TARGET_PATH);

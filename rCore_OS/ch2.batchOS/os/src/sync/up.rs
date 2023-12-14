@@ -14,7 +14,7 @@ pub struct UPSafeCell<T> {
     inner: RefCell<T>,
 }
 
-unsafe impl<T> Sync for UPSafeCell<T> {}
+unsafe impl<T> Sync for UPSafeCell<T> {}  // sync保证这个可以全局共享，这是不安全的
 
 impl<T> UPSafeCell<T> {
     /// User is responsible to guarantee that inner struct is only used in

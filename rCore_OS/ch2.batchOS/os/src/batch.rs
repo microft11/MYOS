@@ -78,7 +78,8 @@ impl AppManager {
         let app_src = core::slice::from_raw_parts(
             self.app_start[app_id] as *const u8,
             self.app_start[app_id + 1] - self.app_start[app_id],
-        );
+        );// 创建一个切片 app_src，其元素是从 self.app_start[app_id] 开始的一段内存区域，
+          // 长度为 self.app_start[app_id + 1] - self.app_start[app_id] 字节
         let app_dst = core::slice::from_raw_parts_mut(APP_BASE_ADDRESS as *mut u8, app_src.len());
         app_dst.copy_from_slice(app_src);
         // Memory fence about fetching the instruction memory
@@ -99,9 +100,12 @@ impl AppManager {
     }
 }
 
+/*初始化
+找到 link_app.S 中提供的符号 _num_app 
+并从这里开始解析出应用数量以及各个应用的起始地址 */
 lazy_static! {
-    static ref APP_MANAGER: UPSafeCell<AppManager> = unsafe {
-        UPSafeCell::new({
+    static ref APP_MANAGER: UPSafeCell<AppManager> = unsafe { // 外部库lazy_static 提供 lazy_static! 宏
+        UPSafeCell::new({                      // 只有在它第一次被使用到的时候，才会进行实际的初始化工作
             extern "C" {
                 fn _num_app();
             }
