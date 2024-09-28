@@ -2,8 +2,9 @@
 #define __DRIVER_H__
 #include "types.h"
 
-class Driver {
-public:
+class Driver
+{
+  public:
     Driver();
     ~Driver();
 
@@ -14,19 +15,21 @@ public:
 /*Driver类是一个基类，它有一个默认构造函数和析构函数。
 它还定义了几个虚函数：Activate()、Deactivate()和Reset()。
 这些函数是虚函数，意味着它们可以在派生类中被重写。
-Activate()函数用于激活驱动程序，Deactivate()函数用于停用驱动程序，Reset()函数用于重置驱动程序。
+Activate()函数用于激活驱动程序，Deactivate()函数用于停用驱动程序，
+Reset()函数用于重置驱动程序。
 在基类中，这些函数都是空的，需要在派生类中进行实现。*/
 
-class DriverManager {
-public:
+class DriverManager
+{
+  public:
     DriverManager();
     ~DriverManager();
 
     void Activate();
-    void AddDriver(Driver* driver);
+    void AddDriver(Driver *driver);
 
-private:
-    Driver* drivers[256];
+  private:
+    Driver *drivers[256];
     int numDrivers;
 };
 /*DriverManager类是一个驱动程序管理器，它有一个默认构造函数和析构函数。

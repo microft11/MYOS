@@ -1,21 +1,25 @@
 #include "mouse.h"
 
-void printf(const char*);
+void printf(const char *);
 void printfHex(const uint8_t); // 用于以十六进制格式输出一个字节的数据
 
 // 因为是虚函数所以现在不用实现
-MouseEventHandler::MouseEventHandler() { }
-void MouseEventHandler::OnMouseDown(uint8_t button) { }
-void MouseEventHandler::OnMouseUp(uint8_t button) { }
-void MouseEventHandler::OnMouseMove(uint16_t xoffset, uint16_t yoffset) { }
+MouseEventHandler::MouseEventHandler()
+{
+}
+void MouseEventHandler::OnMouseDown(uint8_t button)
+{
+}
+void MouseEventHandler::OnMouseUp(uint8_t button)
+{
+}
+void MouseEventHandler::OnMouseMove(uint16_t xoffset, uint16_t yoffset)
+{
+}
 
-MouseDriver::MouseDriver(InterruptManager* manager, MouseEventHandler* handler)
-    : InterruptHandler(0x2C, manager)
-    , dataPort(0x60)
-    , commandPort(0x64)
-    , offset(0)
-    , buttons(0)
-    , handler(handler)
+MouseDriver::MouseDriver(InterruptManager *manager, MouseEventHandler *handler)
+    : InterruptHandler(0x2C, manager), dataPort(0x60), commandPort(0x64),
+      offset(0), buttons(0), handler(handler)
 {
 }
 
@@ -49,11 +53,14 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp)
     buffer[offset] = dataPort.Read();
     offset = (offset + 1) % 3;
 
-    if (offset == 0) {
+    if (offset == 0)
+    {
         if (buffer[1] != 0 || buffer[2] != 0)
             handler->OnMouseMove(buffer[1], -buffer[2]);
-        for (uint8_t i = 0; i < 3; i++) {
-            if (buffer[0] & ((i << i) != (buttons & (i << i)))) {
+        for (uint8_t i = 0; i < 3; i++)
+        {
+            if (buffer[0] & ((i << i) != (buttons & (i << i))))
+            {
                 if (buttons & (1 << i))
                     handler->OnMouseUp(i + 1);
                 else

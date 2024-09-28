@@ -1,13 +1,14 @@
 #ifndef __SYSCALLS_H__
 #define __SYSCALLS_H__
 
-#include "types.h"
 #include "interrupts.h"
 #include "multitasking.h"
+#include "types.h"
+
 
 class SyscallHandler : public InterruptHandler
 {
-public:
+  public:
     SyscallHandler(InterruptManager *interruptManager);
     ~SyscallHandler();
 
