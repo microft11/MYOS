@@ -89,12 +89,9 @@ InterruptManager::InterruptManager(GlobalDescriptorTable *gdt,
     idt.base = (uint32_t)interruptDescriptorTable;
 
     __asm__ volatile("lidt %0" : : "m"(idt));
-    /*内联汇编指令 lidt：
-         __asm__ volatile 是内联汇编的语法，用于在C++代码中插入汇编指令。
-        "lidt %0" 是 lidt 汇编指令的操作数，%0
-       表示要替换的第一个操作数。这里，%0 会被替换为 idt 结构体的地址。
-        冒号后面的内容是汇编指令的输入和输出参数。在这种情况下，没有输出参数，只有一个输入参数，即
-       idt 结构体的地址。 "m" 表示将 idt 结构体作为内存操作数传递给 lidt 指令*/
+    //     "lidt %0" 是 lidt 汇编指令的操作数，%0
+    //     冒号后面的内容是汇编指令的输入和输出参数。在这种情况下，没有输出参数，只有一个输入参数，即
+    //    idt 结构体的地址。 "m" 表示将 idt 结构体作为内存操作数传递给 lidt 指令
 }
 
 InterruptManager::~InterruptManager()

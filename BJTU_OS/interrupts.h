@@ -7,6 +7,7 @@
 #include "types.h"
 
 class InterruptManager;
+
 class InterruptHandler
 {
   protected:
@@ -36,7 +37,7 @@ class InterruptManager
     struct GateDescriptor
     {
         /* data */
-        uint16_t handlerAddressLowBits;   // 终端处理程序入口地址
+        uint16_t handlerAddressLowBits;   // 中断处理程序入口地址
         uint16_t gdt_codeSegmentSelector; // 段选择子
         uint8_t reserved;                 // 保留位
         uint8_t access;                   // 访问控制位

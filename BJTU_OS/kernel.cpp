@@ -148,10 +148,7 @@ class PrintfKeyboardEventHandler : public KeyboardEventHandler
     }
 };
 
-/*代码声明了一个名为VideoMemory的静态成员变量，它是一个指向uint16_t类型的指针，
-指向地址0xB8000，该地址是文本模式下屏幕的内存映射起始地址。
-通过操作这段内存，可以实现对屏幕上字符的显示和修改。
-
+/*
 接下来，MouseToConsole类定义了两个私有成员变量x和y，分别表示鼠标在屏幕上的横坐标和纵坐标。
 这些变量用于跟踪鼠标的位置。
 在类的构造函数中，x初始化为40，y初始化为12。
