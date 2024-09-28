@@ -1,23 +1,18 @@
 #include "gdt.h"
 
-GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t type)
+GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(
+    uint32_t base, uint32_t limit, uint8_t type)
 {
-    uint8_t *target = (uint8_t *)this;
+    uint8_t* target = (uint8_t*)this;
 
     /*根据x86架构的要求，限制字段有不同的编码方式。
     如果限制小于等于65536（64KB），则使用一种编码方式，否则使用另一种编码方式。*/
-    if (limit <= 65536)
-    {
+    if (limit <= 65536) {
         target[6] = 0x40;
-    }
-    else
-    {
-        if ((limit & 0xFFF) != 0xFFF)
-        {
+    } else {
+        if ((limit & 0xFFF) != 0xFFF) {
             limit = (limit >> 12) - 1;
-        }
-        else
-        {
+        } else {
             limit = limit >> 12;
         }
 
@@ -38,7 +33,7 @@ GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint3
 
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Base()
 {
-    uint8_t *target = (uint8_t *)this;
+    uint8_t* target = (uint8_t*)this;
     uint32_t result = target[7];
     result = (result << 8) + target[4];
     result = (result << 8) + target[3];
@@ -51,13 +46,13 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Base()
 
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit()
 {
-    uint8_t *target = (uint8_t *)this;
+    uint8_t* target = (uint8_t*)this;
     uint32_t result = target[6] & 0xF;
     result = (result << 8) + target[1];
     result = (result << 8) + target[0];
 
-    if((target[6]&0xC0)==0xC0){
-        result = (result<<12)|0xFFF;
+    if ((target[6] & 0xC0) == 0xC0) {
+        result = (result << 12) | 0xFFF;
     }
     return result;
 }
@@ -65,10 +60,10 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit()
 // GlobalDescriptorTable
 
 GlobalDescriptorTable::GlobalDescriptorTable()
-    : nullSegmentSelector(0, 0, 0),
-      unusedSegmentSelector(0, 0, 0),
-      codeSegmentSelector(0, 64 * 1024*1024, 0x9A),
-      dataSegmentSelector(0, 64 * 1024*1024, 0x92)
+    : nullSegmentSelector(0, 0, 0)
+    , unusedSegmentSelector(0, 0, 0)
+    , codeSegmentSelector(0, 64 * 1024 * 1024, 0x9A)
+    , dataSegmentSelector(0, 64 * 1024 * 1024, 0x92)
 {
     uint32_t i[2];
     i[1] = (uint32_t)this;
@@ -78,7 +73,7 @@ GlobalDescriptorTable::GlobalDescriptorTable()
     而高32位存储 GDT 表的线性地址。
     左移16位将 sizeof(GlobalDescriptorTable) 的值从字节转换为字（1字节 = 8位）*/
 
-    __asm__ volatile("lgdt (%0)" : : "p"((uint8_t *)i + 2));
+    __asm__ volatile("lgdt (%0)" : : "p"((uint8_t*)i + 2));
     /*•	构建一个描述GDT的32位整数数组 i，其中包含 GDT 表的地址和大小。
 •	使用汇编内联指令 lgdt，将 GDT 表的地址和大小加载到全局描述符寄存器（GDTR）中。
 */
@@ -91,13 +86,13 @@ GlobalDescriptorTable::~GlobalDescriptorTable()
 uint16_t GlobalDescriptorTable::CodeSegmentSelector()
 {
     // 返回代码段和数据段的选择符
-    return (uint8_t *)&codeSegmentSelector - (uint8_t *)this;
+    return (uint8_t*)&codeSegmentSelector - (uint8_t*)this;
 }
 
 uint16_t GlobalDescriptorTable::DataSegmentSelector()
 {
     // 返回代码段和数据段的选择符
-    return (uint8_t *)&dataSegmentSelector - (uint8_t *)this;
+    return (uint8_t*)&dataSegmentSelector - (uint8_t*)this;
 }
 /*这个偏移量通常用于在汇编代码中构建段选择器，以便将其加载到段寄存器中
 这是x86体系结构中设置段的一种典型方式。

@@ -1,19 +1,16 @@
-#include "types.h"
+#include "driver.h"
 #include "gdt.h"
 #include "interrupts.h"
 #include "keyboard.h"
-#include "driver.h"
 #include "mouse.h"
 #include "syscalls.h"
 
-void printf(const int8_t *str)
+void printf(const int8_t* str)
 {
-    static int16_t *VideoMemory = (int16_t *)0xb8000;
+    static int16_t* VideoMemory = (int16_t*)0xb8000;
     static int8_t x = 0, y = 0;
-    for (int32_t i = 0; str[i] != '\0'; ++i)
-    {
-        switch (str[i])
-        {
+    for (int32_t i = 0; str[i] != '\0'; ++i) {
+        switch (str[i]) {
         case '\n':
             ++y;
             x = 0;
@@ -23,18 +20,18 @@ void printf(const int8_t *str)
             ++x;
             break;
         }
-        if(x>=80){
+        if (x >= 80) {
             ++y;
-            x=0;
+            x = 0;
         }
-        if(y>=25){
-            for(y=0;y<25;++y){
-                for(x=0;x<80;x++){
+        if (y >= 25) {
+            for (y = 0; y < 25; ++y) {
+                for (x = 0; x < 80; x++) {
                     VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0xFF00) | str[i];
                 }
             }
-            x=0;
-            y=0;
+            x = 0;
+            y = 0;
         }
     }
 }
@@ -42,8 +39,8 @@ void printf(const int8_t *str)
 void printfHex(const uint8_t num)
 {
     uint8_t c = num;
-    static char msg[3] = {'0'};
-    const char * hex = "0123456789ABCGEF";
+    static char msg[3] = { '0' };
+    const char* hex = "0123456789ABCGEF";
     msg[0] = hex[(c >> 4) & 0xF];
     msg[1] = hex[c & 0xF];
     msg[2] = '\0';
@@ -52,29 +49,27 @@ void printfHex(const uint8_t num)
 
 void systime()
 {
-    __asm__ ("int $0x80": : "a" (1));
+    __asm__("int $0x80" : : "a"(1));
 }
 
-void sysprintf(const int8_t * str)
+void sysprintf(const int8_t* str)
 {
-    __asm__ ("int $0x80": : "a" (4), "b" (str)); //通过软中断，中断进入内核的中断向量表去，然后调用内核里写的print
+    __asm__("int $0x80" : : "a"(4), "b"(str)); // 通过软中断，中断进入内核的中断向量表去，然后调用内核里写的print
 }
 
-int8_t strcmp(const int8_t * src, const int8_t * dest)
+int8_t strcmp(const int8_t* src, const int8_t* dest)
 {
-    while ((*src != '\0') && (*src == *dest))
-    {
-        src ++;
-        dest ++;
+    while ((*src != '\0') && (*src == *dest)) {
+        src++;
+        dest++;
     }
     return *src - *dest;
 }
-void simpleShell(const int8_t c, KeyboardDriver * pKeyDriver)
+void simpleShell(const int8_t c, KeyboardDriver* pKeyDriver)
 {
-    if (c == '\n')
-    {
-        int8_t cmd[256] = {0};
-        int8_t * cmd = pKeyDriver -> get_buffer(cmd);
+    if (c == '\n') {
+        // int8_t cmd[256] = { 0 };
+        int8_t* cmd = pKeyDriver->get_buffer(cmd);
 
         if (strcmp(cmd, "time") == 0)
             systime();
@@ -87,14 +82,14 @@ void simpleShell(const int8_t c, KeyboardDriver * pKeyDriver)
 
 void TaskA()
 {
-    while(true) {
+    while (true) {
         sysprintf("A");
     }
 }
 
 void TaskB()
 {
-    while(true) {
+    while (true) {
         sysprintf("B");
     }
 }
@@ -121,13 +116,12 @@ void time()
     printf("\n");
 }
 
-class PrintfKeyboardEventHandler : public KeyboardEventHandler
-{
+class PrintfKeyboardEventHandler : public KeyboardEventHandler {
 public:
     void OnKeyDown(int8_t c)
     {
-        pDriver ->put_buffer(c);
-        char msg[2] = {'\0'};
+        pDriver->put_buffer(c);
+        char msg[2] = { '\0' };
         msg[0] = c;
         printf(msg);
     }
@@ -147,50 +141,46 @@ public:
 类中还实现了OnMouseMove()、OnMouseDown()和OnMouseUp()函数，用于处理鼠标移动、按下和释放事件。
 这些函数首先通过修改VideoMemory[80 * y + x]来改变当前鼠标位置的字符的颜色，然后根据鼠标的移动偏移量更新x和y的值。
 在更新x和y之后，代码再次通过修改VideoMemory[80 * y + x]来改变新鼠标位置的字符的颜色。*/
-class MouseToConsole : public MouseEventHandler
-{
+class MouseToConsole : public MouseEventHandler {
     int16_t x, y;
-    static uint16_t *VideoMemory;
+    static uint16_t* VideoMemory;
+
 public:
-    MouseToConsole() : x(40), y(12)
+    MouseToConsole()
+        : x(40)
+        , y(12)
     {
-        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
-                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
-                                  ((VideoMemory[80 * y + x] & 0x00FF));
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | ((VideoMemory[80 * y + x] & 0xF000) << 4) | ((VideoMemory[80 * y + x] & 0x00FF));
     }
 
     void OnMouseMove(int16_t xoffset, int16_t yoffset)
     {
-        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
-                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
-                                  ((VideoMemory[80 * y + x] & 0x00FF));
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | ((VideoMemory[80 * y + x] & 0xF000) << 4) | ((VideoMemory[80 * y + x] & 0x00FF));
         x += xoffset;
-        if (x < 0) x = 0;
-        if (y >= 80) x = 79;
+        if (x < 0)
+            x = 0;
+        if (y >= 80)
+            x = 79;
         y += yoffset;
-        if (y < 0) y = 0;
-        if (y >= 25) y = 24;
+        if (y < 0)
+            y = 0;
+        if (y >= 25)
+            y = 24;
 
-        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
-                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
-                                  ((VideoMemory[80 * y + x] & 0x00FF));
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | ((VideoMemory[80 * y + x] & 0xF000) << 4) | ((VideoMemory[80 * y + x] & 0x00FF));
     }
 
     void OnMouseDown(uint8_t button)
     {
-        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
-                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
-                                  ((VideoMemory[80 * y + x] & 0x00FF));
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | ((VideoMemory[80 * y + x] & 0xF000) << 4) | ((VideoMemory[80 * y + x] & 0x00FF));
     }
     void OnMouseUp(uint8_t button)
     {
-        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | 
-                                  ((VideoMemory[80 * y + x] & 0xF000) << 4) | 
-                                  ((VideoMemory[80 * y + x] & 0x00FF));
+        VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4) | ((VideoMemory[80 * y + x] & 0xF000) << 4) | ((VideoMemory[80 * y + x] & 0x00FF));
     }
 };
 
-uint16_t * MouseToConsole::VideoMemory = (uint16_t *)0xB8000;
+uint16_t* MouseToConsole::VideoMemory = (uint16_t*)0xB8000;
 
 typedef void (*constructor)();
 extern constructor start_ctors;
@@ -198,11 +188,11 @@ extern constructor end_ctors;
 
 extern "C" void callConstructors()
 {
-        for (constructor *i = &start_ctors; i != &end_ctors; ++i)
-    (*i)();
+    for (constructor* i = &start_ctors; i != &end_ctors; ++i)
+        (*i)();
 }
 
-extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
+extern "C" void kernelMain(void* multiboot_structrue, int32_t magicnumber)
 {
     printf("hello OS world!\n");
     printf("hello OS world!\n");
