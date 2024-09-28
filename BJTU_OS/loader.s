@@ -1,6 +1,6 @@
-.set MAGIC,  0x1badb002
+.set MAGIC,  0x1badb002  # magic number 让人相信他是个内核
 .set FLAGS, (1<<0 | 1<<1)
-.set CHECKNUM, -(MAGIC+FLAGS)
+.set CHECKNUM, -(MAGIC+FLAGS) # 校验和
 
 .section .multiboot
     .long MAGIC

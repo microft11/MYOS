@@ -5,8 +5,10 @@
 #include "mouse.h"
 #include "syscalls.h"
 
+// 这是内核，标注IO库是在操作系统之上实现的，所以用print只能自己写
 void printf(const int8_t *str)
 {
+    // 屏幕缓冲区约定是从0xb8000这里开始的
     static int16_t *VideoMemory = (int16_t *)0xb8000;
     static int8_t x = 0, y = 0;
     for (int32_t i = 0; str[i] != '\0'; ++i)
@@ -19,7 +21,9 @@ void printf(const int8_t *str)
             break;
         default:
             VideoMemory[80 * y + x] =
-                (VideoMemory[80 * y + x] & 0xFF00) | str[i];
+                (VideoMemory[80 * y + x] &
+                 0xFF00) /* 0xFF00为了避免覆盖高位字节 0xb8000*/
+                | str[i];
             ++x;
             break;
         }
@@ -220,6 +224,14 @@ extern "C" void callConstructors()
         (*i)();
 }
 
+//     *multiboot_structrue *
+//     这是指向多引导结构体的指针。当操作系统通过多引导启动时，Bootloader
+//     会将这个结构体传递给内核。这个结构体包含了关于启动信息的多种信息，
+//     例如内存布局、硬件信息等，内核可以利用这些信息进行初始化和配置。
+//     *magicnumber **：这是一个用于验证的值。它的主要作用是告诉内核，Bootloader
+//      是否遵循了多引导规范来启动内核。一般情况下，magicnumber
+//      的值是一个特定的常量（如
+//      0x2BADB002），内核可以通过验证这个值来确保自己是被正确加载的。
 extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
 {
     printf("hello OS world!\n");
