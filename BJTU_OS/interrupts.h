@@ -21,6 +21,7 @@ class InterruptHandler
 
     virtual uint32_t HandleInterrupt(uint32_t esp);
 };
+
 /*它们互相引用对方的指针。
 这是因为 InterruptManager 类需要跟踪并管理一组 InterruptHandler 类的实例，
 而 InterruptHandler 类则需要与 InterruptManager

@@ -15,9 +15,7 @@ void KeyboardEventHandler::SetDriver(KeyboardDriver *pDriver)
 
 KeyboardDriver::KB_BUFFER KeyboardDriver::kb_buffer = {0};
 
-/*一个是 InterruptManager 类的指针 manager，另一个是 KeyboardEventHandler
-类的指针 handler。
-在构造函数的实现中，它初始化了各种成员变量，包括中断处理器、数据端口、命令端口和事件处理器
+/*初始化了各种成员变量，包括中断处理器、数据端口、命令端口和事件处理器
 0x60是键盘的数据端口，0x64是键盘的控制端口*/
 KeyboardDriver::KeyboardDriver(InterruptManager *manager,
                                KeyboardEventHandler *handler)
@@ -31,6 +29,9 @@ KeyboardDriver::~KeyboardDriver()
 {
 }
 
+// 该方法用于将字符放入键盘缓冲区
+// 如果缓冲区未满，则将字符添加到缓冲区尾部
+// 并更新缓冲区的计数和尾指针
 void KeyboardDriver::put_buffer(const int8_t c)
 {
     if (kb_buffer.count < 255)
@@ -41,6 +42,8 @@ void KeyboardDriver::put_buffer(const int8_t c)
             kb_buffer.tail = 0;
     }
 }
+
+// 从键盘缓冲区获取数据并将其存储到提供的缓冲区中
 int8_t *KeyboardDriver::get_buffer(int8_t *buffer)
 {
     int16_t i = 0;
@@ -64,11 +67,7 @@ int8_t *KeyboardDriver::get_buffer(int8_t *buffer)
     return buffer;
 }
 
-/*这个函数是用于处理键盘中断的方法。当键盘中断发生时，操作系统将调用此函数。
-函数返回一个 uint32_t 类型的值，并且接受一个 esp 参数（栈指针）。
-在函数内部，它读取键盘输入，并根据输入的键码执行不同的操作，例如发送字符到
-handler，或者输出键码。
-
+/*
 函数中，有一系列 case 语句，每个 case 对应一个键盘扫描码。
 根据键盘输入的不同，它们执行不同的操作，例如将字符发送到事件处理器，输出字符，设置Shift状态等。
 键盘输入的处理逻辑似乎是基于扫描码来映射字符*/
