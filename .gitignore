@@ -1,2 +1,5 @@
 BJTU_OS/.vscode/
 .vscode/
+BJTU_OS/obj/*
+BJTU_OS/myKernel.bin
+BJTU_OS/myKernel.iso

@@ -30,9 +30,9 @@ install: mykernel.bin
 		sudo cp $< /boot/mykernel.bin
 
 mykernel.iso: mykernel.bin
-	mkdir iso
-	mkdir iso/boot
-	mkdir iso/boot/grub
+	mkdir -p iso
+	mkdir -p iso/boot
+	mkdir -p iso/boot/grub
 	cp $< iso/boot/
 	echo 'set timeout=0' >> iso/boot/grub/grub.cfg
 	echo 'set default=0' >> iso/boot/grub/grub.cfg
@@ -46,9 +46,9 @@ mykernel.iso: mykernel.bin
 	
 run: mykernel.iso
 	killall qemu-system-x86_64 || true
-	sleep 1
-	qemu-system-x86_64 -cdrom mykernel.iso -boot d -m 512 -smp 2
+	# sleep 1
+	qemu-system-x86_64 -cdrom mykernel.iso -boot d -m 512 -smp 2 -display gtk
 
 .PHONY: clean
 clean:
-	rm -rf mykernel.bin mykernel.iso
+	rm -rf mykernel.bin mykernel.iso obj/*.o obj/**/*.o
