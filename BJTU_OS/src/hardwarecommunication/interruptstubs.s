@@ -20,12 +20,13 @@ HandleInterruptRequest 0x60
 
 
 int_bottom:
+    
+    # save resigster
     # pusha
-    # push %ds
-    # push %es
-    # push %fs
-    # push %gs
-
+    # pushl %ds
+    # pushl %es
+    # pushl %fs
+    # pushl %gs
     pushl %ebp
     pushl %edi
     pushl %esi
@@ -35,20 +36,25 @@ int_bottom:
     pushl %ebx
     pushl %eax
 
+    # load ring 0 segment register
+    # cld
+    # $0x10, %eax
+    # %eax, %eds
+    # %eax, %ees
+
+    # call C++ Handler
     pushl %esp
     push (interruptnumber)
-
     call _ZN4myos21hardwarecommunication16InterruptManager15handleInterruptEhj
-
-    #pop (interruptnumber)
-    #popl %esp
-    movl %eax,%esp
-
+    # add %esp, 6
+    mov %eax, %esp # switch the stack
+                   # %eax always contains return value 
+    # restore registers
     popl %eax
     popl %ebx
     popl %ecx
     popl %edx
-
+    
     popl %esi
     popl %edi
     popl %ebp
@@ -58,6 +64,8 @@ int_bottom:
     # popl %es
     # popl %ds
     # popa
+
+    add $4, %esp
 
 _ZN4myos21hardwarecommunication16InterruptManager22IgnoreInterruptRequestEv:
     iret

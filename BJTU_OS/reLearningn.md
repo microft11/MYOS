@@ -116,3 +116,7 @@ GDT的主要作用是：
 - `KeyboardEventHandler` 可以被派生类重写以处理具体的键盘输入事件（如特定按键的响应）。
 
 这样，`InterruptManager` 负责中断管理，`KeyboardDriver` 处理键盘中断和数据，而 `KeyboardEventHandler` 实现具体的按键事件逻辑。
+
+
+## 运行命令
+qemu-system-i386.exe -cdrom mykernel.iso -boot d -m 512 -smp 2 -L "C:\Program Files\qemu"

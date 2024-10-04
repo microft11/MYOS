@@ -45,9 +45,9 @@ mykernel.iso: mykernel.bin
 	rm -rf iso
 	
 run: mykernel.iso
-	killall qemu-system-x86_64 || true
+	killall qemu-system-i386 || true
 	# sleep 1
-	qemu-system-x86_64 -cdrom mykernel.iso -boot d -m 512 -smp 2 -display gtk
+	qemu-system-i386 -cdrom mykernel.iso -boot d -m 512 -smp 2
 
 .PHONY: clean
 clean:

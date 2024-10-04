@@ -1,6 +1,8 @@
 #include <hardwarecommunication/interrupts.h>
+
 using namespace myos::common;
 using namespace myos::hardwarecommunication;
+
 void printf(const int8_t *);
 void printfHex(const uint8_t);
 
