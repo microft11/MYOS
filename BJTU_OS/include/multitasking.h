@@ -1,8 +1,8 @@
 #ifndef __MULTITASKING_H__
 #define __MULTITASKING_H__
 
-#include "gdt.h"
-#include "types.h"
+#include <common/types.h>
+#include <gdt.h>
 
 /*表示在上下文切换期间CPU的状态。
 它包括通用寄存器（eax、ebx、ecx、edx、esi、edi、ebp）、
@@ -10,27 +10,27 @@
 __attribute__ ((packed)) 用于确保结构体成员之间没有填充字节*/
 struct CPUState
 {
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
+    myos::common::uint32_t eax;
+    myos::common::uint32_t ebx;
+    myos::common::uint32_t ecx;
+    myos::common::uint32_t edx;
 
-    uint32_t esi;
-    uint32_t edi;
-    uint32_t ebp;
+    myos::common::uint32_t esi;
+    myos::common::uint32_t edi;
+    myos::common::uint32_t ebp;
 
-    // uint32_t gs;
-    // uint32_t fs;
-    // uint32_t es;
-    // uint32_t ds;
+    // myos::common::uint32_t gs;
+    // myos::common::uint32_t fs;
+    // myos::common::uint32_t es;
+    // myos::common::uint32_t ds;
 
-    uint32_t error;
+    myos::common::uint32_t error;
 
-    uint32_t eip;
-    uint32_t cs;
-    uint32_t eflags;
-    uint32_t esp;
-    uint32_t ss;
+    myos::common::uint32_t eip;
+    myos::common::uint32_t cs;
+    myos::common::uint32_t eflags;
+    myos::common::uint32_t esp;
+    myos::common::uint32_t ss;
 } __attribute__((packed));
 
 /*Task 类表示多任务环境中的一个任务。
@@ -47,7 +47,7 @@ class Task
     ~Task();
 
   private:
-    uint8_t stack[4096];
+    myos::common::uint8_t stack[4096];
     CPUState *cpustate;
 };
 /*为什么需要传入 GDT 的一些原因：
@@ -81,8 +81,8 @@ class TaskManager
 
   private:
     Task *tasks[256];
-    uint8_t numTasks;
-    uint8_t currentTask;
+    myos::common::uint8_t numTasks;
+    myos::common::uint8_t currentTask;
 };
 
 #endif
