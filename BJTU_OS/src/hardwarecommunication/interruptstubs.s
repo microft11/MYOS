@@ -1,12 +1,12 @@
 .set IRQ_BASE,0x20
 .section .text
 
-.extern _ZN15InterruptManager15handleInterruptEhj
-.global _ZN15InterruptManager22IgnoreInterruptRequestEv
+.extern _ZN4myos21hardwarecommunication16InterruptManager15handleInterruptEhj
+.global _ZN4myos21hardwarecommunication16InterruptManager22IgnoreInterruptRequestEv
 
 .macro HandleInterruptRequest num
-.global _ZN15InterruptManager26HandleInterruptRequest\num\()Ev
-_ZN15InterruptManger26HandleInterruptRequest\num\()Ev:
+.global _ZN4myos21hardwarecommunication16InterruptManager26HandleInterruptRequest\num\()Ev
+_ZN4myos21hardwarecommunication16InterruptManager26HandleInterruptRequest\num\()Ev:
     movb $\num + IRQ_BASE, (interruptnumber)
     pushl $0
     jmp int_bottom
@@ -38,7 +38,7 @@ int_bottom:
     pushl %esp
     push (interruptnumber)
 
-    call _ZN15InterruptManager15handleInterruptEhj
+    call _ZN4myos21hardwarecommunication16InterruptManager15handleInterruptEhj
 
     #pop (interruptnumber)
     #popl %esp
@@ -59,7 +59,7 @@ int_bottom:
     # popl %ds
     # popa
 
-_ZN15InterruptManager22IgnoreInterruptRequestEv:
+_ZN4myos21hardwarecommunication16InterruptManager22IgnoreInterruptRequestEv:
     iret
 
 .data
