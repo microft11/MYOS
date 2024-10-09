@@ -4,6 +4,7 @@
 #include <drivers/mouse.h>
 #include <gdt.h>
 #include <hardwarecommunication/interrupts.h>
+#include <hardwarecommunication/pci.h>
 #include <hardwarecommunication/port.h>
 #include <syscalls.h>
 
@@ -234,9 +235,12 @@ extern "C" void kernelMain(void *multiboot_structrue, int32_t magicnumber)
     MouseToConsole mousehandler;
     MouseDriver mouse(&interrupts, &mousehandler);
 
-    driverManager.AddDriver(&keyboard);
+    // driverManager.AddDriver(&keyboard);
     driverManager.AddDriver(&mouse);
     driverManager.Activate();
+
+    PeripheralComponentInterconnectController PCIController;
+    PCIController.SelectDrivers(&driverManager, &interrupts);
 
     interrupts.Activate();
 

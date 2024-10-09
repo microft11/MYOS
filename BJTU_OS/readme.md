@@ -85,6 +85,7 @@ GDT的主要作用是：
 尽管现代操作系统主要依赖分页（Paging）进行内存管理，但GDT仍然是启动和初始化的重要组成部分，尤其是在设置内核和用户态的内存访问权限时。
 
 ## Keyboard
+
 `KeyboardDriver`、`InterruptManager` 和 `KeyboardEventHandler` 三者之间的关系如下：
 
 ### 1. **KeyboardDriver 类**
@@ -117,51 +118,55 @@ GDT的主要作用是：
 
 这样，`InterruptManager` 负责中断管理，`KeyboardDriver` 处理键盘中断和数据，而 `KeyboardEventHandler` 实现具体的按键事件逻辑。
 
-
 ## PCI（Peripheral Component Interconnect）
+
 PCI（Peripheral Component Interconnect，外围设备互连）设备的ID编号用于唯一标识连接到计算机上的硬件设备。通常情况下，PCI设备会有两个主要ID：**供应商ID**（Vendor ID）和**设备ID**（Device ID），此外还有一些可选的ID字段。
 
 ### 1. **Vendor ID（供应商ID）**:
-   - 这是一个16位的数字，用于标识硬件设备的制造商。例如，Intel 的供应商ID是 `8086`，NVIDIA 的供应商ID是 `10DE`。
-   - 每个供应商ID是唯一的，由 PCI-SIG（PCI Special Interest Group）分配给硬件制造商。
+
+- 这是一个16位的数字，用于标识硬件设备的制造商。例如，Intel 的供应商ID是 `8086`，NVIDIA 的供应商ID是 `10DE`。
+- 每个供应商ID是唯一的，由 PCI-SIG（PCI Special Interest Group）分配给硬件制造商。
 
 ### 2. **Device ID（设备ID）**:
-   - 设备ID是由供应商指定的16位数字，用于标识特定设备的型号。例如，同一供应商的不同型号设备会有不同的设备ID。
-   - 这个ID结合供应商ID可以唯一标识某个硬件设备。
+
+- 设备ID是由供应商指定的16位数字，用于标识特定设备的型号。例如，同一供应商的不同型号设备会有不同的设备ID。
+- 这个ID结合供应商ID可以唯一标识某个硬件设备。
 
 ### 3. **Subsystem Vendor ID 和 Subsystem Device ID（子系统供应商ID和子系统设备ID）**:
-   - 子系统供应商ID和子系统设备ID通常用于标识设备的附加组件或OEM定制版本。
-   - 例如，某个显卡可能由一个供应商（如NVIDIA）制造，但被另一个厂商（如华硕、技嘉等）定制，Subsystem Vendor ID 和 Subsystem Device ID 就会用来标识这些定制的版本。
+
+- 子系统供应商ID和子系统设备ID通常用于标识设备的附加组件或OEM定制版本。
+- 例如，某个显卡可能由一个供应商（如NVIDIA）制造，但被另一个厂商（如华硕、技嘉等）定制，Subsystem Vendor ID 和 Subsystem Device ID 就会用来标识这些定制的版本。
 
 ### 4. **Class Code（类代码）**:
-   - Class Code 是一个 24 位的值，前 8 位表示设备的主类别（如网络设备、存储设备等），中间 8 位表示子类别，最后 8 位则表示编程接口。
 
+- Class Code 是一个 24 位的值，前 8 位表示设备的主类别（如网络设备、存储设备等），中间 8 位表示子类别，最后 8 位则表示编程接口。
 
 ![1728401824999](image/reLearningn/1728401824999.png)
 
 1. **CPU和PCI的连接**：
-   - CPU通过总线连接到PCI设备，CPU可以通过PCI总线访问各种外设。
 
+   - CPU通过总线连接到PCI设备，CPU可以通过PCI总线访问各种外设。
 2. **PIC（Programmable Interrupt Controller，可编程中断控制器）**：
+
    - PIC控制中断信号的管理，帮助CPU处理来自外设的中断请求。
    - 在PCI系统中，PIC与PCI设备协同工作，管理设备的中断信号。
-
 3. **PCI总线（Bus1, Bus2, Bus3）**：
+
    - PCI总线是一个层次结构，多个总线（Bus1, Bus2, Bus3）可以连接不同的设备，每个设备可以有多个功能。
    - 设备通过总线连接到PCI控制器，并共享总线传输数据。
-
 4. **设备（Device1, Device2, Device3）**：
-   - 在图中，设备1、设备2和设备3通过各自的总线连接到PCI控制器。
-   - 设备可能有多个功能，比如图中设备1有`function1`和`function2`。
 
+   - 在图中，设备1、设备2和设备3通过各自的总线连接到PCI控制器。
+   - 设备可能有多个功能，比如图中设备1有 `function1`和 `function2`。
 5. **PCI总线的位编码**：
+
    - 图中有标注“8条运线”和编码方式。
    - PCI设备通过设备号、功能号和总线号进行标识：
      - **总线号（Bus Number）**：8位，用于标识总线。
      - **设备号（Device Number）**：5位，表示总线上的设备号，最多支持32个设备。
      - **功能号（Function Number）**：3位，表示设备的不同功能，一个设备最多支持8个功能。
-
 6. **标准PCI设备地址编码（PCI地址格式）**：
+
    - 设备的地址由总线号、设备号和功能号组合成一个32位地址，格式为：
      ```
      总线号（8位）+ 设备号（5位）+ 功能号（3位） + 寄存器偏移量（8位）
@@ -169,8 +174,9 @@ PCI（Peripheral Component Interconnect，外围设备互连）设备的ID编号
    - 这种编码方式让CPU能够唯一识别并访问不同的PCI设备和它们的功能模块。
 
 ### 小结：
+
 PCI总线结构允许CPU通过一个层次化的总线系统访问多个设备，每个设备可以有多个功能。设备和功能通过总线号、设备号、功能号的组合来唯一标识，并通过指定的地址空间进行访问。在此基础上，图中的每条总线和设备都通过标准的地址编码与系统交互。
+
 ## 运行命令
+
 qemu-system-i386.exe -cdrom mykernel.iso -boot d -m 512 -smp 2 -L "C:\Program Files\qemu"
-
-
