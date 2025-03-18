@@ -48,7 +48,11 @@ mykernel.iso: mykernel.bin
 run: mykernel.iso
 	killall qemu-system-i386 || true
 	# sleep 1
+<<<<<<< HEAD:BJTU_OS/MakeFile
 	qemu-system-i386 -cdrom mykernel.iso -boot d -m 512 -smp 2
+=======
+qemu-system-x86_64 -cdrom mykernel.iso -boot d -m 512 -smp 2 -vnc :0
+>>>>>>> f99bc96 (feat(make): change makefile):BJTU_OS/Makefile
 
 .PHONY: clean
 clean:
